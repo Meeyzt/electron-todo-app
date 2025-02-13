@@ -798,3 +798,61 @@ body {
   max-width: 150px;
   height: auto;
 }
+
+.edit-btn {
+  background-color: var(--accent-secondary);
+  color: var(--text-primary);
+  border: var(--pixel-border) solid #3A3BDE;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.edit-btn .iconify {
+  width: 16px;
+  height: 16px;
+}
+
+.save-btn {
+  background-color: var(--accent-primary);
+  color: var(--text-primary);
+  border: var(--pixel-border) solid #FF1464;
+}
+
+.cancel-btn {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: var(--pixel-border) solid var(--border-color);
+}
+
+.detail-edit {
+  margin-top: 20px;
+}
+
+.detail-edit input,
+.detail-edit textarea,
+.detail-edit select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: var(--main-bg);
+  border: var(--pixel-border) solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.detail-edit textarea {
+  height: 120px;
+  resize: vertical;
+}

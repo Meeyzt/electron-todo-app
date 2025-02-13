@@ -102,13 +102,38 @@
         <button class="close-detail-btn">
           <span class="iconify" data-icon="pixelarticons:close"></span>
         </button>
-        <h2 id="detailTitle"></h2>
-        <p id="detailGroup" class="group-tag"></p>
-        <p id="detailDescription" class="description"></p>
-        <div id="detailImages" class="images-grid"></div>
-        <div class="todo-actions">
-          <button id="detailCompleteBtn" class="complete-btn"></button>
-          <button id="detailDeleteBtn" class="delete-btn">Delete</button>
+        <div class="detail-view">
+          <h2 id="detailTitle"></h2>
+          <p id="detailGroup" class="group-tag"></p>
+          <p id="detailDescription" class="description"></p>
+          <div id="detailImages" class="images-grid"></div>
+          <div class="todo-actions">
+            <button id="detailEditBtn" class="edit-btn">
+              <span class="iconify" data-icon="pixelarticons:edit"></span>
+              Edit
+            </button>
+            <button id="detailCompleteBtn" class="complete-btn"></button>
+            <button id="detailDeleteBtn" class="delete-btn">Delete</button>
+          </div>
+        </div>
+        <div class="detail-edit" style="display: none;">
+          <h2>Edit Todo</h2>
+          <input type="text" id="editTodoTitle" placeholder="Title" />
+          <textarea id="editTodoDescription" placeholder="Description"></textarea>
+          <div class="group-select">
+            <label for="editTodoGroup">Group:</label>
+            <select id="editTodoGroup">
+              <option value="">No Group</option>
+            </select>
+          </div>
+          <div class="image-upload-area" id="editImageUploadArea">
+            <p>Drop images here or paste from clipboard</p>
+            <div id="editPreviewImage" class="image-preview-grid"></div>
+          </div>
+          <div class="todo-actions">
+            <button id="editCancelBtn" class="cancel-btn">Cancel</button>
+            <button id="editSaveBtn" class="save-btn">Save Changes</button>
+          </div>
         </div>
       </div>
     </div>

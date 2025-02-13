@@ -47,6 +47,7 @@ let currentFilter = 'active';
 let currentGroup = 'all';
 let currentImages = [];
 let currentDetailTodo = null;
+let currentEditingTodo = null;
 
 // Link detection regex
 const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -457,4 +458,165 @@ function openTodoModal() {
   previewImage.innerHTML = '';
   currentImages = [];
   updateGroupSelect();
+}
+
+function showEditForm(todo) {
+  currentEditingTodo = todo;
+  const detailView = document.querySelector('.detail-view');
+  const editView = document.querySelector('.detail-edit');
+
+  // Populate edit form
+  document.getElementById('editTodoTitle').value = todo.title;
+  document.getElementById('editTodoDescription').value = todo.description || '';
+
+  // Populate group select
+  const editGroupSelect = document.getElementById('editTodoGroup');
+  editGroupSelect.innerHTML = '<option value="">No Group</option>';
+  groups.forEach(group => {
+    const option = document.createElement('option');
+    option.value = group;
+    option.textContent = group;
+    option.selected = todo.group === group;
+    editGroupSelect.appendChild(option);
+  });
+
+  // Show images in edit form
+  const editPreviewImage = document.getElementById('editPreviewImage');
+  editPreviewImage.innerHTML = '';
+  if (todo.images && todo.images.length > 0) {
+    todo.images.forEach(image => {
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'image-preview-item';
+
+      const img = document.createElement('img');
+      img.src = image;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-image';
+      removeBtn.innerHTML = '<span class="iconify" data-icon="pixelarticons:close"></span>';
+      removeBtn.onclick = () => {
+        imgContainer.remove();
+      };
+
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(removeBtn);
+      editPreviewImage.appendChild(imgContainer);
+    });
+  }
+
+  // Switch views
+  detailView.style.display = 'none';
+  editView.style.display = 'block';
+}
+
+function hideEditForm() {
+  const detailView = document.querySelector('.detail-view');
+  const editView = document.querySelector('.detail-edit');
+
+  detailView.style.display = 'block';
+  editView.style.display = 'none';
+  currentEditingTodo = null;
+}
+
+// Add event listeners for edit functionality
+document.getElementById('detailEditBtn').addEventListener('click', async () => {
+  if (currentDetailTodo) {
+    showEditForm(currentDetailTodo);
+  }
+});
+
+document.getElementById('editCancelBtn').addEventListener('click', hideEditForm);
+document.getElementById('editSaveBtn').addEventListener('click', async () => {
+  await saveEditedTodo();
+});
+
+// Add image upload functionality to edit form
+const editImageUploadArea = document.getElementById('editImageUploadArea');
+editImageUploadArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  editImageUploadArea.style.borderColor = '#007AFF';
+});
+
+editImageUploadArea.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  editImageUploadArea.style.borderColor = '#e0e0e0';
+});
+
+editImageUploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  editImageUploadArea.style.borderColor = '#e0e0e0';
+
+  const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+  files.forEach(handleEditImage);
+});
+
+editImageUploadArea.addEventListener('paste', (e) => {
+  const items = e.clipboardData.items;
+  for (let item of items) {
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile();
+      handleEditImage(file);
+      break;
+    }
+  }
+});
+
+function handleEditImage(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const imageData = e.target.result;
+    const editPreviewImage = document.getElementById('editPreviewImage');
+
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'image-preview-item';
+
+    const img = document.createElement('img');
+    img.src = imageData;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-image';
+    removeBtn.innerHTML = '<span class="iconify" data-icon="pixelarticons:close"></span>';
+    removeBtn.onclick = () => {
+      imgContainer.remove();
+    };
+
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(removeBtn);
+    editPreviewImage.appendChild(imgContainer);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveEditedTodo() {
+  if (!currentEditingTodo) return;
+
+  const storedTodos = await store.get('todos') || [];
+  const todoIndex = storedTodos.findIndex(t => t.id === currentEditingTodo.id);
+
+  if (todoIndex === -1) return;
+
+  // Get edited values
+  const editedTodo = {
+    ...currentEditingTodo,
+    title: document.getElementById('editTodoTitle').value,
+    description: document.getElementById('editTodoDescription').value,
+    group: document.getElementById('editTodoGroup').value,
+    images: Array.from(document.getElementById('editPreviewImage').querySelectorAll('img')).map(img => img.src)
+  };
+
+  // Update stored todos
+  storedTodos[todoIndex] = editedTodo;
+  await store.set('todos', storedTodos);
+
+  // Update global todos state
+  todos = storedTodos;
+
+  // Update detail view
+  currentDetailTodo = editedTodo;
+  updateDetailView();
+  hideEditForm();
+  renderTodos();
 } 
