@@ -1,7 +1,7 @@
 {
   "name": "todo-app",
   "version": "1.0.0",
-  "description": "MacOS Todo Application with image support",
+  "description": "A modern desktop todo application with a pixel art interface. Features include image attachments, group organization, task filtering, clickable links, and persistent storage. Built with Electron for a seamless cross-platform experience.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
