@@ -62,7 +62,8 @@
           <span class="iconify" data-icon="pixelarticons:close"></span>
         </button>
         <h2>New Todo</h2>
-        <input type="text" id="todoTitle" placeholder="Title" />
+        <input type="text" id="todoTitle" placeholder="Title" list="titleSuggestions" />
+        <datalist id="titleSuggestions"></datalist>
         <textarea id="todoDescription" placeholder="Description"></textarea>
         <div class="group-select">
           <label for="todoGroup">Group:</label>
@@ -118,7 +119,8 @@
         </div>
         <div class="detail-edit" style="display: none;">
           <h2>Edit Todo</h2>
-          <input type="text" id="editTodoTitle" placeholder="Title" />
+          <input type="text" id="editTodoTitle" placeholder="Title" list="editTitleSuggestions" />
+          <datalist id="editTitleSuggestions"></datalist>
           <textarea id="editTodoDescription" placeholder="Description"></textarea>
           <div class="group-select">
             <label for="editTodoGroup">Group:</label>

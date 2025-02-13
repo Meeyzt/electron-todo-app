@@ -64,6 +64,7 @@ async function initializeApp() {
     // Render initial state
     renderTodos();
     renderGroups();
+    updateTitleSuggestions();
   } catch (error) {
     console.error('Initialization error:', error);
   }
@@ -348,6 +349,20 @@ async function deleteGroup(groupName) {
   updateGroupSelect();
 }
 
+function updateTitleSuggestions() {
+  // Get unique titles from existing todos
+  const existingTitles = [...new Set(todos.map(todo => todo.title))];
+
+  // Update both datalists
+  const datalists = ['titleSuggestions', 'editTitleSuggestions'];
+  datalists.forEach(listId => {
+    const datalist = document.getElementById(listId);
+    datalist.innerHTML = existingTitles
+      .map(title => `<option value="${title}">`)
+      .join('');
+  });
+}
+
 async function saveTodo() {
   const title = document.getElementById('todoTitle').value.trim();
   const description = document.getElementById('todoDescription').value.trim();
@@ -372,6 +387,7 @@ async function saveTodo() {
   todoModal.style.display = 'none';
   currentImages = [];
   renderTodos();
+  updateTitleSuggestions(); // Update suggestions after adding new todo
 }
 
 async function toggleTodo(id) {
@@ -391,6 +407,7 @@ async function deleteTodo(id) {
   await store.set('todos', todos);
   renderTodos();
   closeDetailModal();
+  updateTitleSuggestions(); // Update suggestions after deleting todo
 }
 
 function renderTodos() {
@@ -619,4 +636,5 @@ async function saveEditedTodo() {
   updateDetailView();
   hideEditForm();
   renderTodos();
+  updateTitleSuggestions(); // Update suggestions after editing todo
 } 
