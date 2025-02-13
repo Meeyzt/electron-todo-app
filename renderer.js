@@ -19,6 +19,7 @@ const todoModal = document.getElementById('todoModal');
 const groupModal = document.getElementById('groupModal');
 const todoDetailModal = document.getElementById('todoDetailModal');
 const cancelTodoBtn = document.getElementById('cancelTodo');
+const closeModalBtn = document.getElementById('closeModalBtn');
 const saveTodoBtn = document.getElementById('saveTodo');
 const cancelGroupBtn = document.getElementById('cancelGroup');
 const saveGroupBtn = document.getElementById('saveGroup');
@@ -79,6 +80,7 @@ function initializeEventListeners() {
   desktopAddGroupBtn.addEventListener('click', openGroupModal);
 
   cancelTodoBtn.addEventListener('click', closeModal);
+  closeModalBtn.addEventListener('click', closeModal);
   saveTodoBtn.addEventListener('click', saveTodo);
   cancelGroupBtn.addEventListener('click', closeGroupModal);
   saveGroupBtn.addEventListener('click', saveGroup);

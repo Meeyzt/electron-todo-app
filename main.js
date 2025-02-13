@@ -14,6 +14,9 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 900,
     height: 700,
+    icon: process.platform === 'darwin'
+      ? path.join(__dirname, 'logo.icns')
+      : path.join(__dirname, 'logo.png'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -38,6 +41,8 @@ async function createWindow() {
   });
 
   win.loadFile('index.html');
+
+  win.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

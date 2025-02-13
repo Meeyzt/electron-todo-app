@@ -12,7 +12,14 @@
   "build": {
     "appId": "com.todo.app",
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "logo.icns"
+    },
+    "win": {
+      "icon": "logo.png"
+    },
+    "linux": {
+      "icon": "logo.png"
     }
   },
   "author": "",

@@ -766,3 +766,14 @@ body {
   margin-right: 8px;
   vertical-align: -0.125em;
 }
+
+.logo {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.logo img {
+  max-width: 150px;
+  height: auto;
+}
