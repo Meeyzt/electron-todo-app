@@ -41,6 +41,11 @@ async function createWindow() {
   });
 
   win.loadFile('index.html');
+
+  // Open DevTools in development mode
+  if (process.argv.includes('--inspect')) {
+    win.webContents.openDevTools();
+  }
 }
 
 // This method will be called when Electron has finished
