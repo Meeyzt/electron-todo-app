@@ -1,12 +1,15 @@
 {
   "name": "todo-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A modern desktop todo application with a pixel art interface. Features include image attachments, group organization, task filtering, clickable links, and persistent storage. Built with Electron for a seamless cross-platform experience.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --inspect",
-    "build": "electron-builder",
+    "build": "electron-builder -mwl",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "build:mac": "electron-builder --mac",
     "pack": "electron-builder --dir"
   },
   "build": {
@@ -45,19 +48,30 @@
     "linux": {
       "icon": "logo.png",
       "target": [
-        "AppImage"
-      ]
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "category": "Utility",
+      "maintainer": "Meeyzt(Mehmet Yılmaz) <meezyt@gmail.com>"
     }
   },
-  "author": "",
+  "author": {
+    "name": "Meeyzt(Mehmet Yılmaz)",
+    "email": "meezyt@gmail.com"
+  },
   "license": "ISC",
   "dependencies": {
     "canvas-confetti": "^1.9.3",
     "electron-store": "^8.1.0"
   },
   "devDependencies": {
+    "@electron-forge/maker-deb": "^7.3.0",
+    "@electron-forge/maker-rpm": "^7.3.0",
+    "@electron-forge/maker-zip": "^7.3.0",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1",
-    "electron-reload": "^2.0.0-alpha.1"
+    "electron-reload": "^2.0.0-alpha.1",
+    "wine-darwin": "^0.1.0"
   }
 }
