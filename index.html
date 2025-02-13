@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Todo App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="mobile-header">
+      <button id="sidebarToggle" class="sidebar-toggle">
+        <span class="iconify" data-icon="pixelarticons:menu"></span>
+      </button>
+      <div class="mobile-actions">
+        <button id="addTodoBtn" class="mobile-action-btn">
+          <span class="iconify" data-icon="pixelarticons:plus"></span> New Todo
+        </button>
+        <button id="addGroupBtn" class="mobile-action-btn">
+          <span class="iconify" data-icon="pixelarticons:folder-plus"></span> New Group
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <h1>Todo App</h1>
+      <div class="add-todo">
+        <button id="desktopAddTodoBtn">
+          <span class="iconify" data-icon="pixelarticons:plus"></span> New Todo
+        </button>
+        <button id="desktopAddGroupBtn">
+          <span class="iconify" data-icon="pixelarticons:folder-plus"></span> New Group
+        </button>
+      </div>
+      <div class="groups">
+        <h2>Groups</h2>
+        <div id="groupsList">
+          <div class="group active" data-group="all">
+            <span>All Todos</span>
+          </div>
+          <!-- Groups will be added here dynamically -->
+        </div>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div id="todoList" class="todo-list">
+        <!-- Todos will be added here dynamically -->
+      </div>
+    </div>
+
+    <!-- Todo Form Modal -->
+    <div id="todoModal" class="modal">
+      <div class="modal-content">
+        <button class="close-modal-btn">
+          <span class="iconify" data-icon="pixelarticons:close"></span>
+        </button>
+        <h2>New Todo</h2>
+        <input type="text" id="todoTitle" placeholder="Title" />
+        <textarea id="todoDescription" placeholder="Description"></textarea>
+        <div class="group-select">
+          <label for="todoGroup">Group:</label>
+          <select id="todoGroup">
+            <option value="">No Group</option>
+          </select>
+        </div>
+        <div class="image-upload-area" id="imageUploadArea">
+          <p>Drop images here or paste from clipboard</p>
+          <div id="previewImage" class="image-preview-grid"></div>
+        </div>
+        <div class="modal-buttons">
+          <button id="cancelTodo">Cancel</button>
+          <button id="saveTodo">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Form Modal -->
+    <div id="groupModal" class="modal">
+      <div class="modal-content">
+        <button class="close-modal-btn">
+          <span class="iconify" data-icon="pixelarticons:close"></span>
+        </button>
+        <h2>New Group</h2>
+        <input type="text" id="groupName" placeholder="Group Name" />
+        <div class="modal-buttons">
+          <button id="cancelGroup">Cancel</button>
+          <button id="saveGroup">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Todo Detail Modal -->
+    <div id="todoDetailModal" class="detail-modal">
+      <div class="detail-modal-content">
+        <button class="close-detail-btn">
+          <span class="iconify" data-icon="pixelarticons:close"></span>
+        </button>
+        <h2 id="detailTitle"></h2>
+        <p id="detailGroup" class="group-tag"></p>
+        <p id="detailDescription" class="description"></p>
+        <div id="detailImages" class="images-grid"></div>
+        <div class="todo-actions">
+          <button id="detailCompleteBtn" class="complete-btn"></button>
+          <button id="detailDeleteBtn" class="delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+
+</html>
