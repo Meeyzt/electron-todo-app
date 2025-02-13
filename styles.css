@@ -189,6 +189,13 @@ body {
   gap: 8px;
 }
 
+.filters h2 {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
 .filter-btn {
   padding: 10px;
   background: none;

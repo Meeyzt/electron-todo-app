@@ -1,4 +1,5 @@
 const { shell, ipcRenderer } = require('electron');
+const confetti = require('canvas-confetti');
 
 // Store wrapper for IPC communication
 const store = {
@@ -491,9 +492,20 @@ async function saveTodo() {
 async function toggleTodo(id) {
   const todo = todos.find(t => t.id === id);
   if (todo) {
+    const wasCompleted = todo.completed;
     todo.completed = !todo.completed;
     await store.set('todos', todos);
     renderTodos();
+
+    // If todo was just completed (not uncompleted), trigger confetti
+    if (!wasCompleted && todo.completed) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
     if (currentDetailTodo && currentDetailTodo.id === id) {
       updateDetailView();
     }
