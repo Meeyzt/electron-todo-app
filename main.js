@@ -41,8 +41,6 @@ async function createWindow() {
   });
 
   win.loadFile('index.html');
-
-  win.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

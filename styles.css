@@ -314,7 +314,6 @@ body {
   border: var(--pixel-border) solid var(--accent-primary);
   font-size: 12px;
   color: var(--accent-primary);
-  margin-top: 8px;
 }
 
 /* Modal styles */
@@ -484,6 +483,28 @@ body {
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.todo-images {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.todo-content-bottom {
+  display: flex;
+  align-items: center;
+}
+
+.todo-content-bottom.has-group {
+  justify-content: flex-start;
+}
+
+.todo-content-bottom.has-images {
+  justify-content: flex-end;
+}
+
+.todo-content-bottom.has-group.has-images {
+  justify-content: space-between;
 }
 
 .detail-modal-content h2 {

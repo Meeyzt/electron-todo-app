@@ -20,6 +20,7 @@ const groupModal = document.getElementById('groupModal');
 const todoDetailModal = document.getElementById('todoDetailModal');
 const cancelTodoBtn = document.getElementById('cancelTodo');
 const closeModalBtn = document.getElementById('closeModalBtn');
+const closeGroupModalBtn = document.getElementById('closeGroupModalBtn');
 const saveTodoBtn = document.getElementById('saveTodo');
 const cancelGroupBtn = document.getElementById('cancelGroup');
 const saveGroupBtn = document.getElementById('saveGroup');
@@ -83,6 +84,7 @@ function initializeEventListeners() {
   closeModalBtn.addEventListener('click', closeModal);
   saveTodoBtn.addEventListener('click', saveTodo);
   cancelGroupBtn.addEventListener('click', closeGroupModal);
+  closeGroupModalBtn.addEventListener('click', closeGroupModal);
   saveGroupBtn.addEventListener('click', saveGroup);
   closeDetailBtn.addEventListener('click', closeDetailModal);
 
@@ -414,10 +416,14 @@ function renderTodos() {
         </div>
         <div class="todo-content">
           <h3>${makeLinksClickable(todo.title)}</h3>
-          ${todo.group ? `<span class="group-tag">${todo.group}</span>` : ''}
+          <div class="todo-content-bottom ${todo.group ? 'has-group' : ''} ${todo.images.length ? 'has-images' : ''}">
+            ${todo.group ? `<span class="group-tag">${todo.group}</span>` : ''}
+            <div class="todo-images">
+              ${todo.images.length ? `${todo.images.length} images` : ''}
+            </div>
+          </div>
         </div>
       </div>
-      ${todo.images ? `${todo.images.length} images` : ''}
     </div>
   `).join('');
 }
