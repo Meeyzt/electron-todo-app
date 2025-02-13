@@ -67,9 +67,12 @@
         <textarea id="todoDescription" placeholder="Description"></textarea>
         <div class="group-select">
           <label for="todoGroup">Group:</label>
-          <select id="todoGroup">
-            <option value="">No Group</option>
-          </select>
+          <div class="searchable-select">
+            <input type="text" id="todoGroupSearch" placeholder="Search or select group" />
+            <div id="todoGroupDropdown" class="dropdown-content">
+              <div class="dropdown-item" data-value="">No Group</div>
+            </div>
+          </div>
         </div>
         <div class="image-upload-area" id="imageUploadArea">
           <p>Drop images here or paste from clipboard</p>
@@ -124,9 +127,12 @@
           <textarea id="editTodoDescription" placeholder="Description"></textarea>
           <div class="group-select">
             <label for="editTodoGroup">Group:</label>
-            <select id="editTodoGroup">
-              <option value="">No Group</option>
-            </select>
+            <div class="searchable-select">
+              <input type="text" id="editTodoGroupSearch" placeholder="Search or select group" />
+              <div id="editTodoGroupDropdown" class="dropdown-content">
+                <div class="dropdown-item" data-value="">No Group</div>
+              </div>
+            </div>
           </div>
           <div class="image-upload-area" id="editImageUploadArea">
             <p>Drop images here or paste from clipboard</p>

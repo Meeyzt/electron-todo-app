@@ -60,11 +60,13 @@ async function initializeApp() {
 
     // Initialize event listeners
     initializeEventListeners();
+    initializeSearchableDropdowns();
 
     // Render initial state
     renderTodos();
     renderGroups();
     updateTitleSuggestions();
+    updateDropdowns();
   } catch (error) {
     console.error('Initialization error:', error);
   }
@@ -270,6 +272,16 @@ function updateGroupSelect() {
   });
 }
 
+function updateDropdowns() {
+  const dropdowns = ['todoGroupDropdown', 'editTodoGroupDropdown'];
+  dropdowns.forEach(dropdownId => {
+    const dropdown = document.getElementById(dropdownId);
+    if (dropdown) {
+      updateDropdownItems(dropdown, '');
+    }
+  });
+}
+
 async function saveGroup() {
   const groupName = document.getElementById('groupName').value.trim();
   if (!groupName) {
@@ -286,7 +298,7 @@ async function saveGroup() {
   await store.set('groups', groups);
   groupModal.style.display = 'none';
   renderGroups();
-  updateGroupSelect();
+  updateDropdowns();
 }
 
 function renderGroups() {
@@ -346,7 +358,7 @@ async function deleteGroup(groupName) {
   // Re-render everything
   renderGroups();
   renderTodos();
-  updateGroupSelect();
+  updateDropdowns();
 }
 
 function updateTitleSuggestions() {
@@ -363,10 +375,96 @@ function updateTitleSuggestions() {
   });
 }
 
+function initializeSearchableDropdowns() {
+  // New Todo Form Dropdown
+  const todoGroupSearch = document.getElementById('todoGroupSearch');
+  const todoGroupDropdown = document.getElementById('todoGroupDropdown');
+
+  todoGroupSearch.addEventListener('click', () => {
+    todoGroupDropdown.classList.add('show');
+    updateDropdownItems(todoGroupDropdown, todoGroupSearch.value);
+  });
+
+  todoGroupSearch.addEventListener('focus', () => {
+    todoGroupDropdown.classList.add('show');
+    updateDropdownItems(todoGroupDropdown, todoGroupSearch.value);
+  });
+
+  todoGroupSearch.addEventListener('input', (e) => {
+    updateDropdownItems(todoGroupDropdown, e.target.value);
+  });
+
+  // Edit Form Dropdown
+  const editTodoGroupSearch = document.getElementById('editTodoGroupSearch');
+  const editTodoGroupDropdown = document.getElementById('editTodoGroupDropdown');
+
+  editTodoGroupSearch.addEventListener('click', () => {
+    editTodoGroupDropdown.classList.add('show');
+    updateDropdownItems(editTodoGroupDropdown, editTodoGroupSearch.value);
+  });
+
+  editTodoGroupSearch.addEventListener('focus', () => {
+    editTodoGroupDropdown.classList.add('show');
+    updateDropdownItems(editTodoGroupDropdown, editTodoGroupSearch.value);
+  });
+
+  editTodoGroupSearch.addEventListener('input', (e) => {
+    updateDropdownItems(editTodoGroupDropdown, e.target.value);
+  });
+
+  // Handle dropdown item selection
+  todoGroupDropdown.addEventListener('click', (e) => {
+    const item = e.target.closest('.dropdown-item');
+    if (item) {
+      selectedGroup = item.dataset.value;
+      todoGroupSearch.value = item.textContent;
+      todoGroupDropdown.classList.remove('show');
+    }
+  });
+
+  editTodoGroupDropdown.addEventListener('click', (e) => {
+    const item = e.target.closest('.dropdown-item');
+    if (item) {
+      selectedEditGroup = item.dataset.value;
+      editTodoGroupSearch.value = item.textContent;
+      editTodoGroupDropdown.classList.remove('show');
+    }
+  });
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.searchable-select')) {
+      todoGroupDropdown.classList.remove('show');
+      editTodoGroupDropdown.classList.remove('show');
+    }
+  });
+}
+
+function updateDropdownItems(dropdown, searchText) {
+  // Reset dropdown content
+  dropdown.innerHTML = '<div class="dropdown-item" data-value="">No Group</div>';
+
+  // Filter and add groups
+  const filteredGroups = groups.filter(group =>
+    !searchText || group.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  filteredGroups.forEach(group => {
+    const item = document.createElement('div');
+    item.className = 'dropdown-item';
+    item.dataset.value = group;
+    item.textContent = group;
+    dropdown.appendChild(item);
+  });
+
+  // Show dropdown
+  dropdown.classList.add('show');
+}
+
 async function saveTodo() {
   const title = document.getElementById('todoTitle').value.trim();
   const description = document.getElementById('todoDescription').value.trim();
-  const group = todoGroupSelect.value;
+  const group = document.getElementById('todoGroupSearch').value.trim();
 
   if (!title) {
     alert('Please enter a title');
@@ -387,7 +485,7 @@ async function saveTodo() {
   todoModal.style.display = 'none';
   currentImages = [];
   renderTodos();
-  updateTitleSuggestions(); // Update suggestions after adding new todo
+  updateTitleSuggestions();
 }
 
 async function toggleTodo(id) {
@@ -471,10 +569,10 @@ function openTodoModal() {
   todoModal.style.display = 'block';
   document.getElementById('todoTitle').value = '';
   document.getElementById('todoDescription').value = '';
-  todoGroupSelect.value = '';
+  document.getElementById('todoGroupSearch').value = '';
   previewImage.innerHTML = '';
   currentImages = [];
-  updateGroupSelect();
+  updateDropdowns();
 }
 
 function showEditForm(todo) {
@@ -485,17 +583,7 @@ function showEditForm(todo) {
   // Populate edit form
   document.getElementById('editTodoTitle').value = todo.title;
   document.getElementById('editTodoDescription').value = todo.description || '';
-
-  // Populate group select
-  const editGroupSelect = document.getElementById('editTodoGroup');
-  editGroupSelect.innerHTML = '<option value="">No Group</option>';
-  groups.forEach(group => {
-    const option = document.createElement('option');
-    option.value = group;
-    option.textContent = group;
-    option.selected = todo.group === group;
-    editGroupSelect.appendChild(option);
-  });
+  document.getElementById('editTodoGroupSearch').value = todo.group || '';
 
   // Show images in edit form
   const editPreviewImage = document.getElementById('editPreviewImage');
@@ -620,7 +708,7 @@ async function saveEditedTodo() {
     ...currentEditingTodo,
     title: document.getElementById('editTodoTitle').value,
     description: document.getElementById('editTodoDescription').value,
-    group: document.getElementById('editTodoGroup').value,
+    group: document.getElementById('editTodoGroupSearch').value.trim(),
     images: Array.from(document.getElementById('editPreviewImage').querySelectorAll('img')).map(img => img.src)
   };
 
@@ -636,5 +724,5 @@ async function saveEditedTodo() {
   updateDetailView();
   hideEditForm();
   renderTodos();
-  updateTitleSuggestions(); // Update suggestions after editing todo
+  updateTitleSuggestions();
 } 

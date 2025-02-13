@@ -856,3 +856,73 @@ body {
   height: 120px;
   resize: vertical;
 }
+
+.searchable-select {
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.searchable-select input {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--main-bg);
+  border: var(--pixel-border) solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--main-bg);
+  border: var(--pixel-border) solid var(--border-color);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.dropdown-content.show {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 63, 129, 0.1);
+}
+
+.dropdown-item.selected {
+  background-color: rgba(255, 63, 129, 0.2);
+  border-left: 4px solid var(--accent-primary);
+}
+
+.dropdown-item.hidden {
+  display: none;
+}
+
+:focus {
+  outline-color: var(--accent-primary);
+}
+
+:focus-visible {
+  outline-color: var(--accent-primary);
+}
+
+*:focus {
+  outline-color: var(--accent-primary);
+}
+
+*:focus-visible {
+  outline-color: var(--accent-primary);
+}
