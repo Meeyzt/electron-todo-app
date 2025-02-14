@@ -41,6 +41,13 @@ const detailDeleteBtn = document.getElementById('detailDeleteBtn');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebar = document.querySelector('.sidebar');
 
+// Image Viewer functionality
+const imageViewerModal = document.getElementById('imageViewerModal');
+const viewerImage = document.getElementById('viewerImage');
+let currentScale = 1;
+let isDragging = false;
+let startX, startY, translateX = 0, translateY = 0;
+
 // Initialize state variables
 let todos = [];
 let groups = [];
@@ -53,15 +60,28 @@ let currentEditingTodo = null;
 // Link detection regex
 const urlRegex = /(https?:\/\/[^\s]+)/g;
 
+// Add new state variables for groups
+let pinnedGroups = [];
+let recentGroups = [];
+const MAX_RECENT_GROUPS = 5;
+
+// Initialize groups state
+async function initializeGroupsState() {
+  pinnedGroups = await store.get('pinnedGroups') || [];
+  recentGroups = await store.get('recentGroups') || [];
+}
+
 // Initialize application
 async function initializeApp() {
   try {
     todos = await store.get('todos') || [];
     groups = await store.get('groups') || [];
+    await initializeGroupsState();
 
     // Initialize event listeners
     initializeEventListeners();
     initializeSearchableDropdowns();
+    initializeGroupSearch();
 
     // Render initial state
     renderTodos();
@@ -190,6 +210,48 @@ function initializeEventListeners() {
       sidebar.classList.remove('active');
     }
   });
+
+  // Keyboard shortcuts for modals
+  document.addEventListener('keydown', (e) => {
+    // ESC to close modals
+    if (e.key === 'Escape') {
+      if (todoModal.style.display === 'block') closeModal();
+      if (groupModal.style.display === 'block') closeGroupModal();
+      if (todoDetailModal.style.display === 'block') closeDetailModal();
+    }
+
+    // Enter to save in modals
+    if (e.key === 'Enter' && !e.shiftKey) {
+      if (groupModal.style.display === 'block') {
+        e.preventDefault();
+        saveGroup();
+      }
+      if (todoModal.style.display === 'block' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        saveTodo();
+      }
+    }
+  });
+
+  // Add click event to todo images
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('.detail-modal-content .images-grid img')) {
+      openImageViewer(e.target.src);
+    }
+  });
+
+  // Close image viewer with ESC or clicking outside
+  imageViewerModal.addEventListener('click', (e) => {
+    if (e.target === imageViewerModal || e.target.closest('.close-modal-btn')) {
+      closeImageViewer();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && imageViewerModal.style.display === 'block') {
+      closeImageViewer();
+    }
+  });
 }
 
 function makeLinksClickable(text) {
@@ -303,6 +365,24 @@ async function saveGroup() {
 }
 
 function renderGroups() {
+  // Render pinned groups
+  const pinnedGroupsContainer = document.getElementById('pinnedGroups');
+  const pinnedGroupsSection = pinnedGroupsContainer.closest('.groups-section');
+
+  if (pinnedGroups.length > 0) {
+    pinnedGroupsContainer.innerHTML = pinnedGroups.map(group => createGroupElement(group, true)).join('');
+    pinnedGroupsSection.style.display = 'block';
+  } else {
+    pinnedGroupsSection.style.display = 'none';
+  }
+
+  // Render recent groups (excluding pinned ones)
+  const recentGroupsContainer = document.getElementById('recentGroups');
+  const recentUnpinnedGroups = recentGroups.filter(group => !pinnedGroups.includes(group));
+  recentGroupsContainer.innerHTML = recentUnpinnedGroups.map(group => createGroupElement(group)).join('');
+
+  // Render all groups
+  const groupsList = document.getElementById('groupsList');
   groupsList.innerHTML = `
     <div class="group ${currentGroup === 'all' ? 'active' : ''}" data-group="all">
       <span>All Todos</span>
@@ -310,28 +390,41 @@ function renderGroups() {
     <div class="group ${currentGroup === 'ungrouped' ? 'active' : ''}" data-group="ungrouped">
       <span>Ungrouped</span>
     </div>
+    ${groups
+      .sort((a, b) => a.localeCompare(b))
+      .filter(group => !pinnedGroups.includes(group))
+      .map(group => createGroupElement(group))
+      .join('')}
   `;
 
-  if (groups.length > 0) {
-    const groupsHtml = groups.map(group => `
-      <div class="group ${currentGroup === group ? 'active' : ''}" data-group="${group}">
-        <span>${group}</span>
-        <button class="group-delete" onclick="event.stopPropagation(); deleteGroup('${group}')">
-          <span class="iconify" data-icon="pixelarticons:close"></span>
-        </button>
-      </div>
-    `).join('');
-    groupsList.insertAdjacentHTML('beforeend', groupsHtml);
-  }
-
+  // Add click event listeners
   document.querySelectorAll('.group').forEach(groupEl => {
     groupEl.addEventListener('click', () => {
-      currentGroup = groupEl.dataset.group;
+      const groupName = groupEl.dataset.group;
+      currentGroup = groupName;
+      updateRecentGroups(groupName);
       document.querySelectorAll('.group').forEach(g => g.classList.remove('active'));
       groupEl.classList.add('active');
       renderTodos();
     });
   });
+}
+
+function createGroupElement(group, isPinned = false) {
+  const isActive = currentGroup === group;
+  return `
+    <div class="group ${isActive ? 'active' : ''}" data-group="${group}">
+      <span>${group}</span>
+      <div class="group-actions">
+        <button class="group-pin ${isPinned ? 'pinned' : ''}" onclick="togglePin('${group}', event)">
+          <span class="iconify" data-icon="pixelarticons:${isPinned ? 'bookmark' : 'bookmarks'}"></span>
+        </button>
+        <button class="group-delete" onclick="event.stopPropagation(); deleteGroup('${group}')">
+          <span class="iconify" data-icon="pixelarticons:close"></span>
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 async function deleteGroup(groupName) {
@@ -523,37 +616,101 @@ async function deleteTodo(id) {
 function renderTodos() {
   let filteredTodos = [...todos];
 
+  // Filter by completion status
   filteredTodos = filteredTodos.filter(todo =>
     currentFilter === 'active' ? !todo.completed : todo.completed
   );
 
-  if (currentGroup !== 'all') {
-    filteredTodos = filteredTodos.filter(todo => {
-      if (currentGroup === 'ungrouped') {
-        return !todo.group || todo.group === '';
-      }
-      return todo.group === currentGroup;
+  // If viewing all notes, show hierarchical view
+  if (currentGroup === 'all') {
+    // Group todos by their group
+    const todosByGroup = {};
+    filteredTodos.forEach(todo => {
+      const group = todo.group || 'Ungrouped';
+      if (!todosByGroup[group]) todosByGroup[group] = [];
+      todosByGroup[group].push(todo);
     });
-  }
 
-  todoList.innerHTML = filteredTodos.map(todo => `
-    <div class="todo-item ${todo.completed ? 'completed' : ''}" onclick="openDetailModal(${todo.id})">
-      <div class="todo-header">
-        <div class="todo-checkbox" onclick="event.stopPropagation(); toggleTodo(${todo.id});">
-          ${todo.completed ? '<span class="iconify" data-icon="pixelarticons:check"></span>' : ''}
+    // Create HTML for hierarchical view
+    todoList.innerHTML = Object.entries(todosByGroup).map(([group, groupTodos]) => `
+      <div class="group-section">
+        <h3 class="group-header">${group}</h3>
+        <div class="group-todos">
+          ${groupTodos.map(todo => `
+            <div class="todo-item ${todo.completed ? 'completed' : ''}" onclick="openDetailModal(${todo.id})">
+              <div class="todo-header">
+                <div class="todo-checkbox" onclick="event.stopPropagation(); toggleTodo(${todo.id});">
+                  ${todo.completed ? '<span class="iconify" data-icon="pixelarticons:check"></span>' : ''}
+                </div>
+                <div class="todo-content">
+                  <h3>${makeLinksClickable(todo.title)}</h3>
+                  <div class="todo-content-bottom ${todo.images.length ? 'has-images' : ''}">
+                    <div class="todo-images">
+                      ${todo.images.length ? `${todo.images.length} images` : ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
         </div>
-        <div class="todo-content">
-          <h3>${makeLinksClickable(todo.title)}</h3>
-          <div class="todo-content-bottom ${todo.group ? 'has-group' : ''} ${todo.images.length ? 'has-images' : ''}">
-            ${todo.group ? `<span class="group-tag">${todo.group}</span>` : ''}
-            <div class="todo-images">
-              ${todo.images.length ? `${todo.images.length} images` : ''}
+      </div>
+    `).join('');
+  } else {
+    // Regular view for filtered todos
+    if (currentGroup !== 'all') {
+      filteredTodos = filteredTodos.filter(todo => {
+        if (currentGroup === 'ungrouped') {
+          return !todo.group || todo.group === '';
+        }
+        return todo.group === currentGroup;
+      });
+
+      // Add group section header when viewing a specific group
+      todoList.innerHTML = `
+        <div class="group-section">
+          <h3 class="group-header">${currentGroup === 'ungrouped' ? 'Ungrouped' : currentGroup}</h3>
+          <div class="group-todos">
+            ${filteredTodos.map(todo => `
+              <div class="todo-item ${todo.completed ? 'completed' : ''}" onclick="openDetailModal(${todo.id})">
+                <div class="todo-header">
+                  <div class="todo-checkbox" onclick="event.stopPropagation(); toggleTodo(${todo.id});">
+                    ${todo.completed ? '<span class="iconify" data-icon="pixelarticons:check"></span>' : ''}
+                  </div>
+                  <div class="todo-content">
+                    <h3>${makeLinksClickable(todo.title)}</h3>
+                    <div class="todo-content-bottom ${todo.images.length ? 'has-images' : ''}">
+                      <div class="todo-images">
+                        ${todo.images.length ? `${todo.images.length} images` : ''}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+      todoList.innerHTML = filteredTodos.map(todo => `
+        <div class="todo-item ${todo.completed ? 'completed' : ''}" onclick="openDetailModal(${todo.id})">
+          <div class="todo-header">
+            <div class="todo-checkbox" onclick="event.stopPropagation(); toggleTodo(${todo.id});">
+              ${todo.completed ? '<span class="iconify" data-icon="pixelarticons:check"></span>' : ''}
+            </div>
+            <div class="todo-content">
+              <h3>${makeLinksClickable(todo.title)}</h3>
+              <div class="todo-content-bottom ${todo.images.length ? 'has-images' : ''}">
+                <div class="todo-images">
+                  ${todo.images.length ? `${todo.images.length} images` : ''}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  `).join('');
+      `).join('');
+    }
+  }
 }
 
 // Make functions available globally
@@ -737,4 +894,169 @@ async function saveEditedTodo() {
   hideEditForm();
   renderTodos();
   updateTitleSuggestions();
-} 
+}
+
+function openImageViewer(imageSrc) {
+  viewerImage.src = imageSrc;
+  imageViewerModal.style.display = 'block';
+  resetZoom();
+}
+
+function closeImageViewer() {
+  imageViewerModal.style.display = 'none';
+  resetZoom();
+}
+
+function resetZoom() {
+  currentScale = 1;
+  translateX = 0;
+  translateY = 0;
+  viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+  viewerImage.classList.remove('zoomed');
+}
+
+// Zoom with mouse wheel
+viewerImage.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY * -0.01;
+  handleZoom(delta, e.clientX, e.clientY);
+});
+
+// Gesture zoom support
+let initialDistance = 0;
+viewerImage.addEventListener('gesturestart', (e) => {
+  e.preventDefault();
+  initialDistance = e.scale;
+});
+
+viewerImage.addEventListener('gesturechange', (e) => {
+  e.preventDefault();
+  const delta = e.scale - initialDistance;
+  initialDistance = e.scale;
+  handleZoom(delta, e.clientX, e.clientY);
+});
+
+// Pan image when zoomed
+viewerImage.addEventListener('mousedown', startDragging);
+viewerImage.addEventListener('mousemove', drag);
+viewerImage.addEventListener('mouseup', stopDragging);
+viewerImage.addEventListener('mouseleave', stopDragging);
+
+// Touch events for mobile/touchpad
+viewerImage.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    startDragging(e.touches[0]);
+  }
+});
+
+viewerImage.addEventListener('touchmove', (e) => {
+  if (e.touches.length === 1) {
+    drag(e.touches[0]);
+  }
+});
+
+viewerImage.addEventListener('touchend', stopDragging);
+
+function handleZoom(delta, clientX, clientY) {
+  const rect = viewerImage.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+
+  const newScale = Math.min(Math.max(currentScale + delta, 1), 5);
+
+  if (newScale !== currentScale) {
+    const scaleRatio = newScale / currentScale;
+    currentScale = newScale;
+
+    if (currentScale > 1) {
+      translateX = x - (x - translateX) * scaleRatio;
+      translateY = y - (y - translateY) * scaleRatio;
+      viewerImage.classList.add('zoomed');
+    } else {
+      resetZoom();
+      return;
+    }
+
+    viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+  }
+}
+
+function startDragging(e) {
+  if (currentScale > 1) {
+    isDragging = true;
+    startX = e.clientX - translateX;
+    startY = e.clientY - translateY;
+    viewerImage.style.transition = 'none';
+  }
+}
+
+function drag(e) {
+  if (isDragging && currentScale > 1) {
+    e.preventDefault();
+    translateX = e.clientX - startX;
+    translateY = e.clientY - startY;
+    viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+  }
+}
+
+function stopDragging() {
+  isDragging = false;
+  viewerImage.style.transition = 'transform 0.1s ease-out';
+}
+
+// Initialize group search functionality
+function initializeGroupSearch() {
+  const searchInput = document.getElementById('groupSearch');
+
+  searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    filterGroups(searchTerm);
+  });
+}
+
+// Filter groups based on search term
+function filterGroups(searchTerm) {
+  const allGroupElements = document.querySelectorAll('.group');
+
+  allGroupElements.forEach(groupEl => {
+    const groupName = groupEl.querySelector('span').textContent.toLowerCase();
+    if (groupName.includes(searchTerm) || groupEl.dataset.group === 'all') {
+      groupEl.style.display = 'flex';
+    } else {
+      groupEl.style.display = 'none';
+    }
+  });
+}
+
+// Update recent groups
+async function updateRecentGroups(groupName) {
+  if (groupName === 'all' || groupName === 'ungrouped') return;
+
+  recentGroups = recentGroups.filter(g => g !== groupName);
+  recentGroups.unshift(groupName);
+
+  if (recentGroups.length > MAX_RECENT_GROUPS) {
+    recentGroups = recentGroups.slice(0, MAX_RECENT_GROUPS);
+  }
+
+  await store.set('recentGroups', recentGroups);
+  renderGroups();
+}
+
+// Toggle pin status
+async function togglePin(groupName, event) {
+  event.stopPropagation();
+
+  const index = pinnedGroups.indexOf(groupName);
+  if (index !== -1) {
+    pinnedGroups.splice(index, 1); // Remove from pinned groups
+  } else {
+    pinnedGroups.push(groupName);
+  }
+
+  await store.set('pinnedGroups', pinnedGroups);
+  renderGroups();
+}
+
+// Make togglePin available globally
+window.togglePin = togglePin; 

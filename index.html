@@ -34,19 +34,35 @@
           <span class="iconify" data-icon="pixelarticons:folder-plus"></span> New Group
         </button>
       </div>
-      <div class="groups">
-        <h2>Groups</h2>
-        <div id="groupsList">
-          <div class="group active" data-group="all">
-            <span>All Todos</span>
-          </div>
-          <!-- Groups will be added here dynamically -->
-        </div>
-      </div>
       <div class="filters">
         <h2>Filters</h2>
         <button class="filter-btn active" data-filter="active">Active</button>
         <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+      <div class="groups">
+        <h2>Groups</h2>
+        <div class="groups-search">
+          <input type="text" id="groupSearch" placeholder="Search groups..." />
+          <span class="iconify" data-icon="pixelarticons:search"></span>
+        </div>
+        <div class="groups-container">
+          <div class="groups-section">
+            <h3>Pinned</h3>
+            <div id="pinnedGroups" class="groups-list"></div>
+          </div>
+          <div class="groups-section">
+            <h3>Recent</h3>
+            <div id="recentGroups" class="groups-list"></div>
+          </div>
+          <div class="groups-section">
+            <h3>All Groups</h3>
+            <div id="groupsList" class="groups-list">
+              <div class="group active" data-group="all">
+                <span>All Todos</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -60,6 +76,7 @@
     <div id="todoModal" class="modal">
       <div class="modal-content">
         <button id="closeModalBtn" class="close-modal-btn">
+          <span class="shortcut-label">ESC</span>
           <span class="iconify" data-icon="pixelarticons:close"></span>
         </button>
         <h2>New Todo</h2>
@@ -80,8 +97,8 @@
           <div id="previewImage" class="image-preview-grid"></div>
         </div>
         <div class="modal-buttons">
-          <button id="cancelTodo">Cancel</button>
-          <button id="saveTodo">Save</button>
+          <button id="cancelTodo">Cancel <span class="shortcut-label">ESC</span></button>
+          <button id="saveTodo">Save <span class="shortcut-label">↵</span></button>
         </div>
       </div>
     </div>
@@ -90,13 +107,14 @@
     <div id="groupModal" class="modal">
       <div class="modal-content">
         <button id="closeGroupModalBtn" class="close-modal-btn">
+          <span class="shortcut-label">ESC</span>
           <span class="iconify" data-icon="pixelarticons:close"></span>
         </button>
         <h2>New Group</h2>
         <input type="text" id="groupName" placeholder="Group Name" />
         <div class="modal-buttons">
-          <button id="cancelGroup">Cancel</button>
-          <button id="saveGroup">Save</button>
+          <button id="cancelGroup">Cancel <span class="shortcut-label">ESC</span></button>
+          <button id="saveGroup">Save <span class="shortcut-label">↵</span></button>
         </div>
       </div>
     </div>
@@ -105,6 +123,7 @@
     <div id="todoDetailModal" class="detail-modal">
       <div class="detail-modal-content">
         <button class="close-detail-btn">
+          <span class="shortcut-label">ESC</span>
           <span class="iconify" data-icon="pixelarticons:close"></span>
         </button>
         <div class="detail-view">
@@ -140,13 +159,27 @@
             <div id="editPreviewImage" class="image-preview-grid"></div>
           </div>
           <div class="todo-actions">
-            <button id="editCancelBtn" class="cancel-btn">Cancel</button>
-            <button id="editSaveBtn" class="save-btn">Save Changes</button>
+            <button id="editCancelBtn" class="cancel-btn">Cancel <span class="shortcut-label">ESC</span></button>
+            <button id="editSaveBtn" class="save-btn">Save Changes <span class="shortcut-label">↵</span></button>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Image Viewer Modal -->
+  <div id="imageViewerModal" class="image-viewer-modal">
+    <div class="image-viewer-content">
+      <button class="close-modal-btn">
+        <span class="shortcut-label">ESC</span>
+        <span class="iconify" data-icon="pixelarticons:close"></span>
+      </button>
+      <div class="image-viewer-container">
+        <img id="viewerImage" src="" alt="Full size image">
+      </div>
+    </div>
+  </div>
+
   <script src="renderer.js"></script>
 </body>
 

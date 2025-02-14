@@ -7,9 +7,9 @@
     "start": "electron .",
     "dev": "electron . --inspect",
     "build": "electron-builder -mwl",
-    "build:win": "electron-builder --win",
-    "build:linux": "electron-builder --linux",
-    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win --x64 --ia32",
+    "build:linux": "electron-builder --linux --x64",
+    "build:mac": "electron-builder --mac --universal",
     "pack": "electron-builder --dir"
   },
   "build": {
@@ -34,23 +34,64 @@
       "category": "public.app-category.productivity",
       "icon": "logo.icns",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64",
+            "universal"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64",
+            "universal"
+          ]
+        }
       ]
     },
     "win": {
       "icon": "logo.png",
       "target": [
-        "nsis",
-        "portable"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
       ]
     },
     "linux": {
       "icon": "logo.png",
       "target": [
-        "AppImage",
-        "deb",
-        "rpm"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "Utility",
       "maintainer": "Meeyzt(Mehmet Yılmaz) <meezyt@gmail.com>"
